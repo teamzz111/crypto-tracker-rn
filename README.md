@@ -1,97 +1,137 @@
-# Getting Started Crypto App Test Million
+# Crypto Tracker (React Native)
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
-<img width="361" alt="Screenshot 2025-02-10 at 12 08 22 AM" src="https://github.com/user-attachments/assets/0d0fe73c-beb0-485b-bfad-477e2c828a4a" />
-<img width="365" alt="Screenshot 2025-02-10 at 12 08 37 AM" src="https://github.com/user-attachments/assets/f1c31d0a-8b74-4088-ac5b-d64a4afce607" />
+A React Native + TypeScript mobile app for browsing live cryptocurrency market data. It lists coins with their USD price and 24h change, supports search, infinite scroll and pull-to-refresh, and opens a detail screen with market cap, volume and supply figures. Prices come from the public [CoinLore API](https://www.coinlore.com/cryptocurrency-data-api), so no API key is needed.
 
-## Step 1: Start Metro
+<p align="center">
+  <img width="300" alt="Market list screen" src="https://github.com/user-attachments/assets/0d0fe73c-beb0-485b-bfad-477e2c828a4a" />
+  &nbsp;&nbsp;
+  <img width="300" alt="Coin detail screen" src="https://github.com/user-attachments/assets/f1c31d0a-8b74-4088-ac5b-d64a4afce607" />
+</p>
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Features
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+**Market list (Home)**
 
-```sh
-# Using npm
-npm start
+- Coins shown as cards with symbol (`SYMBOL/USDT`), USD price and a green or red 24h change.
+- Infinite scroll: pages of 10 tickers loaded with CoinLore's `start` / `limit` pagination.
+- Search by name or symbol, debounced by 500 ms, which filters the top 100 tickers on the client.
+- Pull-to-refresh, plus a silent auto-refresh every 60 seconds while you aren't searching.
+- Loading, empty ("No cryptocurrencies found") and error states.
 
-# OR using Yarn
-yarn start
+**Coin details**
+
+- Live price and 24h change in the header.
+- Market cap, 24h volume, circulating supply and max supply ("Unlimited" when a coin has no cap), formatted in compact notation (for example `$1.2T`).
+- Pull-to-refresh, plus an auto-refresh every 30 seconds.
+
+## Tech stack
+
+| Area          | Choice                                                        |
+| ------------- | ------------------------------------------------------------- |
+| Framework     | React Native 0.77, React 18.3                                 |
+| Language      | TypeScript 5                                                  |
+| Navigation    | React Navigation 7 (native stack, typed route params)         |
+| UI            | React Native Paper 5 (Material Design 3), Vector Icons        |
+| Data          | `fetch` against the CoinLore REST API                         |
+| State         | Local React state in custom hooks (no global store)           |
+| Tooling       | Jest + React Test Renderer, ESLint (`@react-native`), Prettier |
+
+## Architecture
+
+The UI is kept thin. Data fetching and refresh logic live in custom hooks, and the hooks get their data from a small service layer. That layer turns raw API payloads into domain model classes, which own all the formatting.
+
+```
+Screen (pages/)  ->  hook (hooks/)  ->  CoinLoreAPI (services/)  ->  api.coinlore.net
+                                              |
+                                              v
+                          ExchangeRate / CryptoDetails models
+                          (parsing + Intl.NumberFormat formatting)
 ```
 
-## Step 2: Build and run your app
+- **`CoinLoreAPI`** wraps the endpoints `GET /tickers/?start=&limit=` (paginated list) and `GET /ticker/?id=` (single coin).
+- **`ExchangeRate`** maps a ticker's string fields to numbers and exposes helpers such as `formatUSDValue()`, `get24hChange()` and `get24hVolume()`.
+- **`CryptoDetails`** extends `ExchangeRate` with market cap, supply fields and their formatters.
+- **`useCrypto`** handles the list state: pagination, `hasMore`, debounced search, refresh and the 60 s polling.
+- **`useCryptoDetails`** loads one coin by id and polls it every 30 s.
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+### Project structure
 
-### Android
-
-```sh
-# Using npm
-npm run android
-
-# OR using Yarn
-yarn android
+```
+.
+├── App.tsx                     # PaperProvider + root navigator
+├── index.js                    # App registration
+├── __tests__/App.test.tsx      # Render smoke test (fetch mocked)
+├── src/
+│   ├── components/
+│   │   ├── CryptoListItem/     # Card used in the market list
+│   │   └── ExchangeCard.tsx    # Alternative rate card component
+│   ├── hooks/
+│   │   ├── useCrypto.tsx       # List, search, pagination, polling
+│   │   └── useCryptoDetails.tsx
+│   ├── navigation/
+│   │   ├── root.tsx            # Native stack: Home -> Details
+│   │   └── types.ts            # RootStackParamList
+│   ├── pages/
+│   │   ├── Home.tsx
+│   │   └── Details.tsx
+│   ├── services/
+│   │   ├── CoinLoreAPI.ts      # HTTP client
+│   │   ├── ExchangeService.ts  # ExchangeRate model
+│   │   ├── CryptoDetailts.ts   # CryptoDetails model
+│   │   └── CryptoPortfolio.ts  # Holdings / total value model
+│   └── types/crypto.ts         # API and domain interfaces
+├── android/
+└── ios/
 ```
 
-### iOS
+## Getting started
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+### Prerequisites
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+- Node.js 18 or later
+- A React Native environment for your target platform: Android Studio and an emulator, or Xcode and CocoaPods for iOS. See the official [environment setup guide](https://reactnative.dev/docs/set-up-your-environment).
+
+### Install
+
+```sh
+git clone https://github.com/teamzz111/crypto-tracker-rn.git
+cd crypto-tracker-rn
+npm install
+```
+
+For iOS only, install the CocoaPods dependencies once, and again whenever native dependencies change:
 
 ```sh
 bundle install
+cd ios && bundle exec pod install && cd ..
 ```
 
-Then, and every time you update your native dependencies, run:
+### Run
+
+Start Metro in one terminal:
 
 ```sh
-bundle exec pod install
+npm start
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+Then build and launch the app from another terminal:
 
 ```sh
-# Using npm
+npm run android
+# or
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+## Quality checks
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```sh
+npm run typecheck   # TypeScript (tsc --noEmit)
+npm run lint        # ESLint
+npm test            # Jest
+```
 
-## Step 3: Modify your app
+The Jest suite renders the whole app tree, including navigation and Paper. It mocks `fetch` and uses fake timers, so it never calls the real API.
 
-Now that you have successfully run the app, let's make changes!
+## Data source
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+All market data comes from the free, keyless [CoinLore public API](https://www.coinlore.com/cryptocurrency-data-api) (`https://api.coinlore.net/api`). Prices are quoted in USD.

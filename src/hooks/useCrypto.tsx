@@ -71,7 +71,9 @@ export function useCrypto(limit: number = 10): UseCryptoResult {
   };
 
   const loadMore = async (): Promise<void> => {
-    if (loading || !hasMore || searchQuery.trim()) return;
+    if (loading || !hasMore || searchQuery.trim()) {
+      return;
+    }
 
     setLoading(true);
     const nextPage = page + 1;

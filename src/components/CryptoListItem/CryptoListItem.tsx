@@ -3,13 +3,16 @@ import {View, StyleSheet} from 'react-native';
 import {Card, Text} from 'react-native-paper';
 import {IExchangeRate} from '../../types/crypto';
 import {useNavigation} from '@react-navigation/native';
+import {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import {RootStackParamList} from '../../navigation/types';
 
 type CryptoListItemProps = {
   item: IExchangeRate;
 };
 
 const CryptoListItem = ({item}: CryptoListItemProps) => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const handleCryptoPress = () => {
     navigation.navigate('Details', {cryptoId: item.id});
   };

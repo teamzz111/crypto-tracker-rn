@@ -37,7 +37,9 @@ function HomeScreen() {
   );
 
   const renderFooter = () => {
-    if (!loading || refreshing) return null;
+    if (!loading || refreshing) {
+      return null;
+    }
 
     return (
       <View style={styles.footerLoader}>
@@ -47,7 +49,9 @@ function HomeScreen() {
   };
 
   const renderEmpty = () => {
-    if (loading && !refreshing) return null;
+    if (loading && !refreshing) {
+      return null;
+    }
 
     return (
       <View style={styles.emptyContainer}>

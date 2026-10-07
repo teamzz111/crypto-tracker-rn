@@ -11,8 +11,12 @@ import {
 import {Text, ActivityIndicator, Surface} from 'react-native-paper';
 import {useCryptoDetails} from '../hooks/useCryptoDetails';
 import {useNavigation} from '@react-navigation/native';
+import {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {RootStackParamList} from '../navigation/types';
 
-const DetailScreen = ({route}) => {
+type DetailScreenProps = NativeStackScreenProps<RootStackParamList, 'Details'>;
+
+const DetailScreen = ({route}: DetailScreenProps) => {
   const {cryptoId} = route.params;
 
   const navigation = useNavigation();

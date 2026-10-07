@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import {useState, useEffect, useCallback} from 'react';
 import {CoinLoreAPI} from '../services/CoinLoreAPI';
 import {CryptoDetails} from '../services/CryptoDetailts';
 
@@ -14,7 +14,7 @@ export function useCryptoDetails(cryptoId: string): UseCryptoDetailsResult {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchDetails = async () => {
+  const fetchDetails = useCallback(async () => {
     try {
       setLoading(true);
       const cryptoDetails = await CoinLoreAPI.getCryptoDetails(cryptoId);
@@ -26,7 +26,7 @@ export function useCryptoDetails(cryptoId: string): UseCryptoDetailsResult {
     } finally {
       setLoading(false);
     }
-  };
+  }, [cryptoId]);
 
   useEffect(() => {
     fetchDetails();
@@ -35,7 +35,7 @@ export function useCryptoDetails(cryptoId: string): UseCryptoDetailsResult {
     const interval = setInterval(fetchDetails, 30000); // Refresh every 30 seconds
 
     return () => clearInterval(interval);
-  }, [cryptoId]);
+  }, [fetchDetails]);
 
   const refresh = async () => {
     await fetchDetails();

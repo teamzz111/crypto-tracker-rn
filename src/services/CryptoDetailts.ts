@@ -48,7 +48,9 @@ export class CryptoDetails extends ExchangeRate {
   }
 
   public getSupplyPercentage(): number {
-    if (!this.maxSupply) return 100;
+    if (!this.maxSupply) {
+      return 100;
+    }
     return (this.circulatingSupply / this.maxSupply) * 100;
   }
 }

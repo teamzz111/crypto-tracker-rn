@@ -1,13 +1,20 @@
 {
-  "name": "cryptotest",
+  "name": "crypto-tracker-rn",
   "version": "0.0.1",
+  "description": "React Native crypto market tracker with live CoinLore prices, search, infinite scroll and coin detail screens.",
+  "author": "Andrés Largo <contacto@andreslargo.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/teamzz111/crypto-tracker-rn.git"
+  },
   "private": true,
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
-    "test": "jest"
+    "test": "jest",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@react-navigation/elements": "^2.2.5",
